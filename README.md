@@ -1,36 +1,43 @@
-Download ZIP (ou qualquer arquivo) a partir de Base64 via URL
+# 🚀 Download de Arquivos via Base64 pela URL
 
-Este repositório contém uma única página HTML (index.html) projetada para uma finalidade específica: receber uma string Base64 compactada via fragmento de URL, decodificá-la, descompactá-la e iniciar o download do arquivo correspondente no navegador do usuário.
-🚀 Motivação
+Este repositório contém uma única página HTML (`index.html`) com um propósito específico:  
+**receber uma string Base64 compactada via fragmento da URL, decodificá-la, descompactá-la e iniciar o download do arquivo no navegador.**
 
-Em ambientes de software restritivos, como sistemas ERP (a exemplo do Sankhya), muitas vezes é impossível iniciar o download de arquivos gerados dinamicamente. As restrições comuns incluem:
+---
 
-    Bloqueio de data: URLs.
+## ✨ Motivação
 
-    Higienização de atributos HTML como onclick, removendo qualquer JavaScript.
+Em ambientes com **restrições de execução de scripts**, como ERPs (ex: Sankhya), é comum enfrentar limitações como:
 
-    Bloqueio da execução de tags <script> injetadas dinamicamente.
+- Bloqueio de URLs em ações como `onclick`;
+- Remoção de atributos HTML que utilizam JavaScript;
+- Bloqueio da execução de tags `<script>` injetadas dinamicamente;
+- Limites de tamanho para URLs (ex: erro `URI Too Long`).
 
-    Limites de comprimento de URL (URI Too Long) que impedem a passagem de dados via parâmetros de busca (?).
+Essa página resolve esses problemas ao **transferir a lógica de download para um ambiente neutro**, como o GitHub Pages, onde o navegador pode processar os dados e baixar o arquivo normalmente, sem interferência.
 
-Esta página serve como uma solução robusta para contornar todas essas limitações. Ao externalizar a lógica de download para uma página neutra (como o GitHub Pages), garantimos que o navegador possa executar a operação sem interferência do sistema de origem.
-✨ Como Usar
+---
 
-A página espera receber os dados do arquivo através do fragmento da URL (a parte após o #). Isso evita os limites de comprimento de uma URL padrão.
+## 🛠️ Como Usar
 
-A estrutura da URL deve ser a seguinte:
+A página lê os dados via **fragmento da URL** (parte após o `#`), o que evita os limites tradicionais de tamanho de parâmetros.
 
-https://<seu-usuario>.github.io/<seu-repositorio>/#cdata=<DADOS>&filename=<NOME_DO_ARQUIVO>
+### ✅ Estrutura da URL
 
-Onde:
+https://<usuario>.github.io/<repositorio>/#cdata=<DADOS>&filename=<NOME_DO_ARQUIVO>
 
-    cdata: Contém os dados do arquivo. Para garantir que a URL não fique excessivamente longa, os dados devem ser primeiro compactados com GZIP e depois codificados em Base64.
 
-    filename: O nome que o arquivo terá ao ser baixado. Por exemplo, meus_arquivos.zip.
+**Parâmetros:**
 
-Exemplo de Geração (Java)
+- `cdata`: Dados do arquivo, **compactados com GZIP** e depois codificados em **Base64**.
+- `filename`: Nome desejado para o arquivo a ser baixado (ex: `meus_arquivos.zip`).
 
-// Supondo que 'fileBytes' é um byte[] com o conteúdo do seu arquivo
+---
+
+## 💻 Exemplo de Geração da URL em Java
+
+```java
+// Supondo que 'fileBytes' seja um byte[] com o conteúdo do arquivo
 ByteArrayOutputStream compressedBaos = new ByteArrayOutputStream();
 try (GZIPOutputStream gzipos = new GZIPOutputStream(compressedBaos)) {
     gzipos.write(fileBytes);
@@ -39,22 +46,7 @@ byte[] compressedBytes = compressedBaos.toByteArray();
 String base64CompressedData = Base64.getEncoder().encodeToString(compressedBytes);
 
 String filename = "meu_arquivo.zip";
-String url = "[https://gui1949.github.io/DownloadZipFromBase64/#cdata=](https://gui1949.github.io/DownloadZipFromBase64/#cdata=)" + URLEncoder.encode(base64CompressedData, "UTF-8") + "&filename=" + filename;
-
-🛠️ Funcionamento Técnico
-
-    Leitura da URL: A página usa JavaScript para ler o conteúdo do window.location.hash.
-
-    Extração dos Parâmetros: Os parâmetros cdata e filename são extraídos da string.
-
-    Decodificação: O conteúdo de cdata é primeiro decodificado de Base64 para um array de bytes.
-
-    Descompressão: A biblioteca Pako.js é usada para descompactar os dados (GZIP) e restaurar o conteúdo original do arquivo.
-
-    Criação do Blob: Um Blob (Binary Large Object) é criado com os dados descompactados e o MIME type apropriado (ex: application/zip).
-
-    Início do Download: Um link (<a>) é criado dinamicamente em memória, apontando para o Blob. O JavaScript simula um clique nesse link, o que inicia o download no navegador.
-
-    Limpeza: A página se fecha automaticamente alguns segundos após o início do download para uma melhor experiência do usuário.
-
-Este projeto é um exemplo prático de como a combinação de tecnologias web simples pode resolver problemas complexos em ambientes de software legados ou restritos.
+String url = "https://<usuario>.github.io/<repositorio>/#cdata=" 
+           + URLEncoder.encode(base64CompressedData, "UTF-8") 
+           + "&filename=" + filename;
+```
