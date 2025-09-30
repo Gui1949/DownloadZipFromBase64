@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciando Download...</title>
+    <!-- Adicionando a biblioteca de descompressão Pako -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -43,26 +45,41 @@
             const messageContainer = document.getElementById('message-container');
             
             try {
-                // Pega os parâmetros da URL
                 const params = new URLSearchParams(window.location.search);
-                const base64Data = params.get('data');
+                // Alterado para 'cdata' (compressed data)
+                const base64CompressedData = params.get('cdata');
                 const filename = params.get('filename') || 'download.zip';
 
-                if (!base64Data) {
+                if (!base64CompressedData) {
                     throw new Error('Nenhum dado encontrado para download.');
                 }
 
-                // Cria o link de download dinamicamente
+                // 1. Decodifica o Base64 para uma string binária
+                const binaryString = atob(base64CompressedData);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+
+                // 2. Descompacta os dados usando Pako.js
+                const decompressedData = pako.inflate(bytes);
+
+                // 3. Cria um Blob com os dados originais (descomprimidos)
+                const blob = new Blob([decompressedData], { type: 'application/zip' });
+                const url = URL.createObjectURL(blob);
+                
                 const link = document.createElement('a');
-                link.href = 'data:application/zip;base64,' + base64Data;
+                link.href = url;
                 link.download = filename;
 
-                // Adiciona ao corpo, clica para baixar e remove
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+                
+                // Limpa o URL do objeto para liberar memória
+                URL.revokeObjectURL(url);
 
-                // Atualiza a mensagem para o usuário e fecha a janela
                 messageContainer.innerHTML = '<h1>Download Iniciado!</h1><p>Esta janela será fechada em 3 segundos.</p>';
                 setTimeout(() => window.close(), 3000);
 
@@ -74,3 +91,4 @@
     </script>
 </body>
 </html>
+
