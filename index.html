@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciando Download...</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            padding: 40px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 24px;
+            color: #1a73e8;
+        }
+        p {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="message-container">
+        <h1>Processando...</h1>
+        <p>Aguarde, seu download será iniciado em instantes.</p>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const messageContainer = document.getElementById('message-container');
+            
+            try {
+                // Pega os parâmetros da URL
+                const params = new URLSearchParams(window.location.search);
+                const base64Data = params.get('data');
+                const filename = params.get('filename') || 'download.zip';
+
+                if (!base64Data) {
+                    throw new Error('Nenhum dado encontrado para download.');
+                }
+
+                // Cria o link de download dinamicamente
+                const link = document.createElement('a');
+                link.href = 'data:application/zip;base64,' + base64Data;
+                link.download = filename;
+
+                // Adiciona ao corpo, clica para baixar e remove
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Atualiza a mensagem para o usuário e fecha a janela
+                messageContainer.innerHTML = '<h1>Download Iniciado!</h1><p>Esta janela será fechada em 3 segundos.</p>';
+                setTimeout(() => window.close(), 3000);
+
+            } catch (error) {
+                console.error("Erro ao processar download:", error);
+                messageContainer.innerHTML = '<h1>Ocorreu um Erro</h1><p>' + error.message + '</p><p>Por favor, tente novamente.</p>';
+            }
+        };
+    </script>
+</body>
+</html>
