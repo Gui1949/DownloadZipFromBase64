@@ -45,8 +45,11 @@
             const messageContainer = document.getElementById('message-container');
             
             try {
-                const params = new URLSearchParams(window.location.search);
-                // Alterado para 'cdata' (compressed data)
+                // A MUDANÇA PRINCIPAL ESTÁ AQUI:
+                // Lemos os dados do "hash" da URL (após o #) em vez da query string.
+                const hash = window.location.hash.substring(1); // Remove o '#' inicial
+                const params = new URLSearchParams(hash);
+                
                 const base64CompressedData = params.get('cdata');
                 const filename = params.get('filename') || 'download.zip';
 
